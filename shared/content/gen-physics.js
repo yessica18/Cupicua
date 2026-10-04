@@ -18,9 +18,9 @@ export const physics = {
     return Q({ type: 'numeric', answer: ans, relTol: 0.015, tol: 0.06, prompt: `Una fuerza de $${F}$ N forma $${th}^\\circ$ con la horizontal. ¿Cuánto vale su componente **${useX ? 'horizontal' : 'vertical'}**? (N, 2 decimales)`, hints: ['Descompón la fuerza en un triángulo rectángulo.', useX ? '$F_x = F\\cos\\theta$' : '$F_y = F\\sin\\theta$', 'Calculadora en grados.'], steps: [useX ? `$F_x = ${F}\\cos ${th}^\\circ = ${fmt(ans, 2)}$ N` : `$F_y = ${F}\\sin ${th}^\\circ = ${fmt(ans, 2)}$ N`], why: 'Descomponer vectores permite aplicar las leyes de Newton eje por eje.' });
   },
 
-  kinematics(r, d) {
+  kinematics(r, d, opts) {
     const v0 = r.int(0, 15); const a = r.int(1, 6); const t = r.int(2, 8);
-    const kind = r.int(1, d === 1 ? 1 : 3);
+    const kind = Number(opts?.kind) || r.int(1, d === 1 ? 1 : 3);
     if (kind === 1) return Q({ type: 'numeric', answer: v0 + a * t, prompt: `Un móvil parte con $v_0=${v0}$ m/s y acelera a $a=${a}$ m/s². ¿Qué velocidad tiene tras $${t}$ s?`, hints: ['Aceleración = cambio de velocidad por segundo.', '$v = v_0 + at$', `${v0} + ${a}·${t}`], steps: [`$v = ${v0} + ${a}\\cdot ${t} = ${v0 + a * t}$ m/s`], why: 'La cinemática describe el movimiento sin preguntar por sus causas.' });
     if (kind === 2) return Q({ type: 'numeric', answer: v0 * t + 0.5 * a * t * t, prompt: `Con $v_0=${v0}$ m/s y $a=${a}$ m/s², ¿qué **distancia** recorre en $${t}$ s?`, hints: ['Hay dos aportes: el de la velocidad inicial y el de acelerar.', '$x = v_0t + \\tfrac12 at^2$', `${v0}·${t} + ½·${a}·${t}²`], steps: [`$x = ${v0}\\cdot ${t} + \\frac12\\cdot ${a}\\cdot ${t}^2 = ${v0 * t + 0.5 * a * t * t}$ m`], why: 'El área bajo la gráfica v–t es el desplazamiento.', diagnose: (v) => (Math.abs(v - (v0 + a * t) * t) < 1e-6 ? { msg: 'Usaste la velocidad FINAL como si fuera constante. Como la velocidad cambia, usa $x=v_0t+\\frac12at^2$.' } : null) });
     const v = v0 + a * t; return Q({ type: 'numeric', answer: (v * v - v0 * v0) / (2 * a), prompt: `Un cuerpo con $v_0=${v0}$ m/s acelera a $${a}$ m/s² hasta alcanzar $${v}$ m/s. ¿Qué distancia recorrió?`, hints: ['No conoces el tiempo: usa la relación sin t.', '$v^2 = v_0^2 + 2a\\,\\Delta x$', 'Despeja Δx.'], steps: [`$\\Delta x = \\frac{${v}^2-${v0}^2}{2\\cdot ${a}} = ${(v * v - v0 * v0) / (2 * a)}$ m`], why: 'Elegir la ecuación adecuada ahorra pasos.' });
@@ -54,8 +54,8 @@ export const physics = {
     return Q({ type: 'numeric', answer: a, relTol: 0.015, prompt: `Un bloque desliza **sin rozamiento** por un plano inclinado $${th}^\\circ$. ¿Cuál es su aceleración? ($g=9{,}8$; 2 decimales)`, hints: ['Solo la componente del peso paralela al plano acelera el bloque.', '$a = g\\sin\\theta$', `9,8·sen ${th}°`], steps: [`$a = 9{,}8\\sin ${th}^\\circ = ${fmt(a, 2)}$ m/s²`], why: 'Rampas y pendientes: la trigonometría decide la fuerza.' });
   },
 
-  work_energy(r, d) {
-    const kind = r.int(1, d === 1 ? 2 : 4);
+  work_energy(r, d, opts) {
+    const kind = Number(opts?.kind) || r.int(1, d === 1 ? 2 : 4);
     const m = r.int(2, 10); const v = r.int(3, 12); const h = r.int(2, 20); const F = r.int(10, 50); const dist = r.int(2, 10);
     if (kind === 1) return Q({ type: 'numeric', answer: 0.5 * m * v * v, prompt: `Calcula la **energía cinética** de $${m}$ kg moviéndose a $${v}$ m/s. (J)`, hints: ['La energía cinética depende de la masa y del CUADRADO de la velocidad.', '$K=\\tfrac12 mv^2$', `½·${m}·${v}²`], steps: [`$K = \\frac12\\cdot ${m}\\cdot ${v}^2 = ${0.5 * m * v * v}$ J`], why: 'Duplicar la velocidad cuadruplica la energía: por eso importa tanto en la seguridad vial.' });
     if (kind === 2) return Q({ type: 'numeric', answer: F * dist, prompt: `Una fuerza de $${F}$ N empuja un objeto $${dist}$ m en su misma dirección. ¿Cuánto **trabajo** realiza? (J)`, hints: ['Trabajo = fuerza × distancia (en la dirección de la fuerza).', '$W = Fd\\cos\\theta$ con θ = 0°.', `${F}·${dist}`], steps: [`$W = ${F}\\cdot ${dist} = ${F * dist}$ J`], why: 'El trabajo es la energía transferida por una fuerza.' });
@@ -75,8 +75,8 @@ export const physics = {
     return Q({ type: 'numeric', answer: rr * F * Math.sin(rad(th)), relTol: 0.015, tol: 0.03, prompt: `Una fuerza de $${F}$ N se aplica a $${rr}$ m del eje, formando $${th}^\\circ$ con el brazo. ¿Cuál es el **torque**? (N·m)`, hints: ['El torque mide la capacidad de girar algo.', '$\\tau = rF\\sin\\theta$', `${rr}·${F}·sen ${th}°`], steps: [`$\\tau = ${rr}\\cdot ${F}\\cdot\\sin ${th}^\\circ = ${fmt(rr * F * Math.sin(rad(th)), 2)}$ N·m`], why: 'Llaves, puertas y motores funcionan con torques.' });
   },
 
-  fluids_heat_waves(r, d) {
-    const kind = r.int(1, 4);
+  fluids_heat_waves(r, d, opts) {
+    const kind = Number(opts?.kind) || r.int(1, 4);
     if (kind === 1) { const h = r.int(2, 30); return Q({ type: 'numeric', answer: 1000 * g * h, relTol: 0.01, prompt: `¿Qué **presión** (manométrica) hay a $${h}$ m de profundidad en agua ($\\rho=1000$ kg/m³, $g=9{,}8$)? (Pa)`, hints: ['La presión crece con la profundidad.', '$P=\\rho g h$', `1000·9,8·${h}`], steps: [`$P = 1000\\cdot 9{,}8\\cdot ${h} = ${fmt(1000 * g * h, 0)}$ Pa`], why: 'Presas, submarinos y buceo dependen de la presión hidrostática.' }); }
     if (kind === 2) { const m = r.int(1, 5); const dT = r.int(10, 60); return Q({ type: 'numeric', answer: m * 4186 * dT, relTol: 0.01, prompt: `¿Cuánto calor (J) hace falta para calentar $${m}$ kg de agua $${dT}$ °C? ($c=4186$ J/kg·°C)`, hints: ['Más masa o más ΔT, más energía.', '$Q = mc\\Delta T$', `${m}·4186·${dT}`], steps: [`$Q = ${m}\\cdot 4186\\cdot ${dT} = ${m * 4186 * dT}$ J`], why: 'La termodinámica cuantifica el calor.' }); }
     if (kind === 3) { const f = r.pick([2, 5, 10, 20, 50]); const lam = r.pick([0.5, 1, 2, 4]); return Q({ type: 'numeric', answer: f * lam, prompt: `Una onda tiene frecuencia $${f}$ Hz y longitud de onda $${lam}$ m. ¿Cuál es su **velocidad**? (m/s)`, hints: ['Velocidad = cuántas crestas por segundo × distancia entre crestas.', '$v = f\\lambda$', `${f}·${lam}`], steps: [`$v = ${f}\\cdot ${lam} = ${f * lam}$ m/s`], why: 'La relación v=fλ vale para ondas de sonido, luz y agua.' }); }
@@ -106,9 +106,9 @@ export const electro = {
     return Q({ type: 'numeric', answer: E, relTol: 0.02, prompt: `¿Qué **campo eléctrico** crea una carga de $${q}\\ \\mu$C a $${d}$ m de distancia? (N/C; $k=8{,}99\\times10^9$; 2% de error)`, hints: ['El campo es la fuerza por unidad de carga.', '$E = k\\frac{q}{r^2}$', '1 μC = 10⁻⁶ C.'], steps: [`$E = 8{,}99\\times10^9\\cdot\\frac{${q}\\times10^{-6}}{${d}^2} = ${sci(E)}$ N/C`], why: 'El campo es una “propiedad del espacio” creada por la carga.' });
   },
 
-  ohm(r, d) {
+  ohm(r, d, opts) {
     const V = r.pick([6, 9, 12, 24]); const R = r.pick([2, 3, 4, 6, 8, 12]);
-    const kind = r.int(1, 3);
+    const kind = Number(opts?.kind) || r.int(1, 3);
     if (kind === 1) return Q({ type: 'numeric', answer: V / R, tol: 0.01, prompt: `Una batería de $${V}$ V alimenta una resistencia de $${R}\\ \\Omega$. ¿Qué **corriente** circula? (A)`, hints: ['Ley de Ohm.', '$V = IR \\Rightarrow I = V/R$', `${V} ÷ ${R}`], steps: [`$I = \\frac{${V}}{${R}} = ${fmt(V / R, 3)}$ A`], why: 'Voltaje, corriente y resistencia son las tres variables básicas de un circuito.' });
     if (kind === 2) return Q({ type: 'numeric', answer: (V * V) / R, tol: 0.01, prompt: `¿Qué **potencia** disipa una resistencia de $${R}\\ \\Omega$ conectada a $${V}$ V? (W)`, hints: ['Potencia = voltaje × corriente.', '$P = V^2/R$', `${V}²/${R}`], steps: [`$P = \\frac{${V}^2}{${R}} = ${fmt((V * V) / R, 2)}$ W`], why: 'La potencia dice cuánto calor genera un componente.' });
     const R2 = r.pick([3, 6, 12]);

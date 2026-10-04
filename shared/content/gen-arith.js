@@ -155,8 +155,8 @@ export const arith = {
     });
   },
 
-  percent(r, d) {
-    const kind = r.int(1, d === 1 ? 2 : 4);
+  percent(r, d, opts) {
+    const kind = Number(opts?.kind) || r.int(1, d === 1 ? 2 : 4);
     if (kind === 1) {
       const p = r.pick([10, 20, 25, 50, 15, 5, 30, 40]); const base = r.pick([40, 60, 80, 120, 200, 240, 360]);
       return Q({ type: 'numeric', answer: (p * base) / 100, prompt: `¿Cuánto es el **${p}%** de $${base}$?`, hints: ['“Por ciento” significa “por cada cien”.', `${p}% = ${p}/100.`, `Multiplica ${base} por ${p}/100.`], steps: [`$${p}\\% = \\frac{${p}}{100}$`, `$${base}\\cdot \\frac{${p}}{100} = ${(p * base) / 100}$`], why: 'Descuentos, impuestos, propinas, intereses.' });

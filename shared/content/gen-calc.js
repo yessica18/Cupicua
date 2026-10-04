@@ -39,7 +39,7 @@ export const calculus = {
     return Q({ type: 'expr', vars: ['x'], answer: ans, form: 'expanded', answerText: ans, prompt: `Deriva: $f(x) = ${polyTex(c)}$. Escribe $f'(x)$.`, hints: ['Regla de la potencia: $\\frac{d}{dx}x^n = n x^{n-1}$.', 'Deriva término a término; la derivada de una constante es 0.', c.map((v, i) => (c.length - 1 - i > 0 && v ? `d(${coefStr(v, 'x')}${c.length - 1 - i > 1 ? '^' + (c.length - 1 - i) : ''})` : '')).filter(Boolean).slice(0, 1).join('') + ' → baja el exponente.'], steps: [`$f'(x) = ${polyTex(dc)}$`], why: 'La derivada mide la rapidez de cambio instantánea.', selfcheck: derivOk(polyStr(c), ans), diagnose: () => ({ msg: 'Recuerda: el exponente baja multiplicando y a la potencia se le resta 1.' }) });
   },
 
-  deriv_rules(r, d) {
+  deriv_rules(r, d, opts) {
     const a = r.int(2, 5); const b = r.int(1, 4); const n = r.int(2, 4);
     const bank = [
       { f: `x^${n}*e^x`, df: `${n}x^${n - 1}e^x + x^${n}e^x`, tex: `x^{${n}}e^{x}`, rule: 'producto', hint: '$(uv)\' = u\'v + uv\'$ con $u=x^n$, $v=e^x$.' },
@@ -51,7 +51,8 @@ export const calculus = {
       { f: `x^2/(x+${b})`, df: `(2x(x+${b}) - x^2)/(x+${b})^2`, tex: `\\frac{x^2}{x+${b}}`, rule: 'cociente', hint: '$\\left(\\frac uv\\right)\' = \\frac{u\'v-uv\'}{v^2}$.' },
       { f: `cos(x^2)`, df: `-2x sin(x^2)`, tex: '\\cos(x^2)', rule: 'cadena', hint: 'Afuera: −sen; adentro: 2x.' },
     ];
-    const it = r.pick(bank.slice(0, d === 1 ? 5 : bank.length));
+    const pool = opts?.kind ? bank.filter((b) => b.rule === opts.kind) : bank.slice(0, d === 1 ? 5 : bank.length);
+    const it = r.pick(pool);
     return Q({ type: 'expr', vars: ['x'], answer: it.df, answerText: it.df, prompt: `Deriva: $f(x) = ${it.tex}$. (Regla de la **${it.rule}**.) Escribe $f'(x)$ (usa \`e^x\`, \`sin(x)\`, \`ln(x)\`).`, hints: [`Identifica la regla: ${it.rule}.`, it.hint, 'Simplifica solo si quieres; cualquier forma equivalente vale.'], steps: [it.hint, `$f'(x) = ${it.df.replace(/\*/g, '\\cdot ')}$`], why: 'Estas reglas permiten derivar casi cualquier función real.', selfcheck: derivOk(it.f, it.df) });
   },
 
@@ -181,9 +182,9 @@ export const calculus = {
     return Q({ type: 'set', answer: [r1, r2], prompt: `Para $y'' ${sgn(b)}y' ${sgn(c)}y = 0$, halla las raíces $r$ de la **ecuación característica** $r^2 ${sgn(b)}r ${sgn(c)} = 0$. Escribe separadas por coma.`, hints: ['Prueba soluciones del tipo $y = e^{rx}$.', 'Sustituir da la ecuación característica.', 'Factoriza o usa la fórmula general.'], steps: [`$(r ${sgn(-r1)})(r ${sgn(-r2)}) = 0$`, `$r = ${r1},\\ ${r2}$; solución: $y = C_1e^{${r1}x} + C_2e^{${r2}x}$`], why: 'Así se resuelven vibraciones, circuitos y suspensiones.', selfcheck: () => r1 * r1 + b * r1 + c === 0 && r2 * r2 + b * r2 + c === 0 });
   },
 
-  ode_model(r) {
+  ode_model(r, d, opts) {
     const k = r.pick([0.05, 0.1, 0.2, 0.3]); const T = round(Math.LN2 / k, 3);
-    if (r.chance()) return Q({ type: 'numeric', answer: T, tol: 0.05, prompt: `Una población crece según $P(t) = P_0e^{${k}t}$ (t en años). ¿Cuántos años tarda en **duplicarse**? (2 decimales)`, hints: ['Duplicarse: $P(t) = 2P_0$.', `$e^{${k}t} = 2$`, 'Toma logaritmo natural.'], steps: [`$${k}t = \\ln 2 \\Rightarrow t = \\frac{\\ln 2}{${k}} = ${fmt(T, 2)}$`], why: 'El tiempo de duplicación es independiente del tamaño inicial.' });
+    if (opts?.kind ? opts.kind === 'dup' : r.chance()) return Q({ type: 'numeric', answer: T, tol: 0.05, prompt: `Una población crece según $P(t) = P_0e^{${k}t}$ (t en años). ¿Cuántos años tarda en **duplicarse**? (2 decimales)`, hints: ['Duplicarse: $P(t) = 2P_0$.', `$e^{${k}t} = 2$`, 'Toma logaritmo natural.'], steps: [`$${k}t = \\ln 2 \\Rightarrow t = \\frac{\\ln 2}{${k}} = ${fmt(T, 2)}$`], why: 'El tiempo de duplicación es independiente del tamaño inicial.' });
     const Tenv = r.pick([20, 25]); const T0 = r.pick([90, 95, 100]); const kk = 0.1; const t = r.pick([5, 10, 15]);
     const ans = Tenv + (T0 - Tenv) * Math.exp(-kk * t);
     return Q({ type: 'numeric', answer: ans, tol: 0.2, prompt: `Ley de enfriamiento de Newton: $T(t) = ${Tenv} + (${T0}-${Tenv})e^{-0{,}1t}$ (°C, t en min). ¿Qué temperatura tiene el café a los $${t}$ min? (1 decimal)`, hints: ['Sustituye t en la fórmula.', 'Calcula primero el exponente $-0{,}1\\cdot t$.', 'Luego la exponencial.'], steps: [`$T(${t}) = ${Tenv} + ${T0 - Tenv}e^{-${0.1 * t}} = ${fmt(ans, 1)}$ °C`], why: 'Muchos fenómenos tienden a un equilibrio de forma exponencial.' });

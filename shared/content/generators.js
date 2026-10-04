@@ -26,11 +26,19 @@ for (const key of Object.keys(CONCEPT_BANK)) {
 export const hasGen = (id) => Boolean(GENS[id]);
 
 /** Genera una pregunta determinista (misma semilla → mismo ejercicio). */
-export function makeQuestion(gen, seed = 1, difficulty = 1) {
+/** "gen#kind@d" → { gen, kind, d } (kind y d opcionales) */
+export function parseGenSpec(spec) {
+  const m = String(spec).match(/^([^#@]+)(?:#([^@]+))?(?:@(\d))?$/);
+  return { gen: m[1], kind: m[2], d: m[3] ? Number(m[3]) : undefined };
+}
+
+export function makeQuestion(spec, seed = 1, difficulty = 1) {
+  const { gen, kind, d } = parseGenSpec(spec);
+  const diff = d ?? difficulty;
   const fn = GENS[gen];
   if (!fn) throw new Error(`Generador desconocido: ${gen}`);
-  const q = fn(new RNG(seed * 7919 + difficulty * 104729), difficulty);
-  q.gen = gen; q.seed = seed; q.difficulty = difficulty;
+  const q = fn(new RNG(seed * 7919 + diff * 104729), diff, { kind });
+  q.gen = spec; q.seed = seed; q.difficulty = diff;
   while (q.hints.length < 3) q.hints.push(q.hints[q.hints.length - 1] || 'Relee el enunciado y escribe lo que sabes.');
   return q;
 }

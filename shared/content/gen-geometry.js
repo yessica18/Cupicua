@@ -49,8 +49,8 @@ export const geometry = {
     return Q({ type: 'numeric', answer: longLeg, prompt: `En un triángulo rectángulo la hipotenusa mide $${t[2]}$ y un cateto mide $${shortLeg}$. ¿Cuánto mide el otro cateto?`, hints: ['La hipotenusa es siempre el lado más largo.', '$a^2 = c^2 - b^2$', `${t[2]}² − ${shortLeg}²`], steps: [`$b^2 = ${t[2]}^2 - ${shortLeg}^2 = ${t[2] ** 2 - shortLeg ** 2}$`, `$b = ${longLeg}$`], why: 'Pitágoras también sirve para hallar un lado que no puedes medir.', selfcheck: () => t[2] ** 2 - shortLeg ** 2 === longLeg ** 2 });
   },
 
-  quad_area(r, d) {
-    const kind = r.int(1, d === 1 ? 2 : 4);
+  quad_area(r, d, opts) {
+    const kind = Number(opts?.kind) || r.int(1, d === 1 ? 2 : 4);
     const l = r.int(4, 15); const w = r.int(3, 12);
     if (kind === 1) return Q({ type: 'numeric', answer: l * w, prompt: `Un rectángulo mide $${l}$ m de largo y $${w}$ m de ancho. ¿Cuál es su **área** en m²?`, hints: ['Área = cuántos cuadrados de 1 m² caben.', 'base × altura', `${l} × ${w}`], steps: [`$A = ${l}\\cdot ${w} = ${l * w}\\ \\text{m}^2$`], why: 'El área mide superficie: pisos, pinturas, terrenos.' });
     if (kind === 2) return Q({ type: 'numeric', answer: 2 * (l + w), prompt: `¿Cuál es el **perímetro** de un rectángulo de $${l}$ m por $${w}$ m?`, hints: ['El perímetro es la suma de todos los lados.', 'Hay dos lados de cada medida.', `2(${l} + ${w})`], steps: [`$P = 2(${l}+${w}) = ${2 * (l + w)}$ m`], why: 'El perímetro mide el borde: cercas, marcos.' });
@@ -67,15 +67,15 @@ export const geometry = {
     return Q({ type: 'numeric', answer: (n * (n - 3)) / 2, prompt: `¿Cuántas **diagonales** tiene un polígono de ${n} lados?`, hints: ['Desde cada vértice salen diagonales a todos menos a sí mismo y a sus 2 vecinos.', `Desde cada vértice: ${n - 3}.`, 'Cada diagonal se contó dos veces.'], steps: [`$\\frac{n(n-3)}{2} = \\frac{${n}\\cdot ${n - 3}}{2} = ${(n * (n - 3)) / 2}$`], why: 'Contar con estructura evita listar todo.' });
   },
 
-  circle(r, d) {
-    const rr = r.int(2, 12); const kind = r.int(1, 3);
+  circle(r, d, opts) {
+    const rr = r.int(2, 12); const kind = Number(opts?.kind) || r.int(1, 3);
     if (kind === 1) return Q({ type: 'numeric', answer: 2 * Math.PI * rr, relTol: 0.01, prompt: `Calcula la **circunferencia** de un círculo de radio $${rr}$. (Usa π ≈ 3,14; se acepta 1% de error.)`, hints: ['La circunferencia es la longitud del borde.', '$C = 2\\pi r$', `2 · π · ${rr}`], steps: [`$C = 2\\pi\\cdot ${rr} = ${fmt(2 * Math.PI * rr, 2)}$`], why: 'π es la razón entre la circunferencia y el diámetro de CUALQUIER círculo.' });
     if (kind === 2) return Q({ type: 'numeric', answer: Math.PI * rr * rr, relTol: 0.01, prompt: `Calcula el **área** de un círculo de radio $${rr}$. (π ≈ 3,14; se acepta 1% de error.)`, hints: ['El área mide la superficie interior.', '$A = \\pi r^2$', `π · ${rr}²`], steps: [`$A = \\pi\\cdot ${rr}^2 = ${fmt(Math.PI * rr * rr, 2)}$`], why: 'El área crece con el cuadrado del radio.', diagnose: (v) => (Math.abs(v - 2 * Math.PI * rr) / (2 * Math.PI * rr) < 0.02 ? { msg: 'Calculaste la circunferencia (2πr). El área usa $\\pi r^2$.' } : null) });
     const dm = 2 * rr; return Q({ type: 'numeric', answer: rr, prompt: `Un círculo tiene **diámetro** $${dm}$. ¿Cuánto mide su radio?`, hints: ['El diámetro atraviesa el círculo por el centro.', 'Radio = diámetro ÷ 2', `${dm} ÷ 2`], steps: [`$r = \\frac{${dm}}{2} = ${rr}$`], why: 'Radio y diámetro son lo primero que se identifica.' });
   },
 
-  volume(r, d) {
-    const kind = r.int(1, d === 1 ? 2 : 5);
+  volume(r, d, opts) {
+    const kind = Number(opts?.kind) || r.int(1, d === 1 ? 2 : 5);
     const a = r.int(2, 9); const b = r.int(2, 9); const h = r.int(3, 12);
     if (kind === 1) return Q({ type: 'numeric', answer: a * b * h, prompt: `Un prisma rectangular mide $${a}\\times ${b}\\times ${h}$ cm. ¿Cuál es su **volumen** en cm³?`, hints: ['Volumen = área de la base × altura.', `Base: ${a} × ${b}.`, `Multiplica por ${h}.`], steps: [`$V = ${a}\\cdot ${b}\\cdot ${h} = ${a * b * h}$`], why: 'El volumen cuenta cubitos de 1 cm³.' });
     if (kind === 2) return Q({ type: 'numeric', answer: a ** 3, prompt: `¿Cuál es el volumen de un cubo de arista $${a}$ cm?`, hints: ['Un cubo tiene tres medidas iguales.', '$V = a^3$', `${a}·${a}·${a}`], steps: [`$V = ${a}^3 = ${a ** 3}$`], why: 'Si duplicas la arista, el volumen se multiplica por 8.' });
@@ -195,9 +195,9 @@ export const geometry = {
     return Q({ type: 'numeric', answer: c, relTol: 0.015, prompt: `Dos lados de un triángulo miden $${a}$ y $${b}$ y el ángulo entre ellos mide $${C}^\\circ$. ¿Cuánto mide el tercer lado? (2 decimales; 1,5% de error)`, hints: ['Es como Pitágoras con un término de corrección.', '$c^2 = a^2 + b^2 - 2ab\\cos C$', 'Calcula con cuidado el signo del coseno.'], steps: [`$c^2 = ${a}^2 + ${b}^2 - 2\\cdot ${a}\\cdot ${b}\\cos ${C}^\\circ = ${fmt(c * c, 2)}$`, `$c = ${fmt(c, 2)}$`], why: 'Generaliza Pitágoras a cualquier triángulo (si C=90°, cos C=0).' });
   },
 
-  trig_graph(r) {
+  trig_graph(r, d, opts) {
     const A = r.int(2, 6); const B = r.pick([2, 3, 4, 0.5, 1]);
-    const kind = r.chance();
+    const kind = opts?.kind ? opts.kind === 'amp' : r.chance();
     return Q({ type: 'numeric', answer: kind ? A : (2 * Math.PI) / B, tol: 0.02, prompt: kind ? `¿Cuál es la **amplitud** de $y = ${A}\\sin(${B === 1 ? '' : B}x)$?` : `¿Cuál es el **periodo** de $y = ${A}\\sin(${B === 1 ? '' : B}x)$? (decimal; π ≈ 3,14)`, hints: kind ? ['La amplitud es la altura máxima de la onda.', 'En $y=A\\sin(Bx)$ es |A|.', 'El seno oscila entre −1 y 1.'] : ['El periodo es lo que tarda en repetirse.', 'Periodo = $\\frac{2\\pi}{|B|}$', `B = ${B}`], steps: [kind ? `Amplitud $=|A| = ${A}$` : `$T = \\frac{2\\pi}{${B}} \\approx ${fmt((2 * Math.PI) / B, 2)}$`], why: 'Amplitud y periodo describen sonido, luz y señales.' });
   },
 

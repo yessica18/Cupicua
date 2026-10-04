@@ -11,9 +11,9 @@ export const stats = {
     return Q({ type: 'numeric', answer: (counts[i] / total) * 100, tol: 0.1, viz: { kind: 'bars', labels: cats, values: counts, title: 'Comida favorita (votos)' }, prompt: `En una encuesta votaron así: ${cats.map((c, k) => `${c}: ${counts[k]}`).join(', ')}. ¿Qué **porcentaje** votó por ${cats[i]}? (1 decimal)`, hints: ['Frecuencia relativa = frecuencia ÷ total.', `Total de votos: ${total}.`, 'Multiplica por 100 para el porcentaje.'], steps: [`Total $= ${counts.join('+')} = ${total}$`, `$\\frac{${counts[i]}}{${total}}\\cdot 100 = ${fmt((counts[i] / total) * 100, 1)}\\%$`], why: 'Las tablas de frecuencia resumen datos para poder interpretarlos.' });
   },
 
-  stat_central(r, d) {
+  stat_central(r, d, opts) {
     const n = d === 1 ? 5 : d === 2 ? 7 : 8;
-    const kind = r.pick(['media', 'mediana', 'moda', 'rango']);
+    const kind = opts?.kind || r.pick(['media', 'mediana', 'moda', 'rango']);
     let data;
     if (kind === 'moda') {
       // moda única: un valor aparece 3 veces y los demás son distintos entre sí
