@@ -1,0 +1,35 @@
+{
+  "name": "capicua",
+  "version": "0.1.0",
+  "description": "CAPICÚA — El Universo del Saber. Plataforma educativa 3D con tutora IA.",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "vite",
+    "start": "node server/index.js",
+    "build": "vite build",
+    "test": "node --test tests/*.test.js",
+    "serve": "npm run build && node server/index.js",
+    "api": "node server/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yessica18/Cupiua.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yessica18/Cupiua/issues"
+  },
+  "homepage": "https://github.com/yessica18/Cupiua#readme",
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "katex": "^0.19.0",
+    "pdfjs-dist": "^6.4.299",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "vite": "^8.3.2"
+  },
+  "type": "module",
+  "private": true
+}
