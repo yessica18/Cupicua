@@ -80,7 +80,7 @@ export function nodeStatus(state, levelId) {
   const ls = state.levels[levelId];
   if (pct >= 81) return STATUS.MASTERED;
   if (ls && (ls.att > 0 || ls.placed)) return STATUS.PROGRESS;
-  const gaps = prereqGaps(state, levelId, 25);
+  const gaps = prereqGaps(state, levelId, 25).filter((g) => !g.soft);
   return gaps.length ? STATUS.LOCKED : STATUS.DISCOVERED;
 }
 
