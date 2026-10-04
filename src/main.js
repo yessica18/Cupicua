@@ -106,3 +106,5 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) { /* m
 if (!location.hash) location.hash = '#/';
 resolve();
 window.__capicua = { state, navigate, logout: () => { logout(); location.hash = '#/'; location.reload(); } };
+
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));

@@ -63,7 +63,13 @@ Listo: no hay nada que renovar. Mientras el repositorio exista, la página exist
 
 ---
 
+## Paso 2d · Publicación automática (opcional, recomendada)
+El repositorio ya trae `.github/workflows/pages.yml`. Cuando la rama `main` cambie, GitHub prueba, compila y publica solo:
+1. **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. Haz el *merge* de la PR a `main`. En la pestaña **Actions** verás «Publicar en GitHub Pages»; al terminar, tu enlace queda actualizado.
+
 ## Paso 3 · Compartirlo
+Una vez publicada en `https://`, CAPICÚA se puede **instalar como app** (Chrome: menú ⋮ → *Instalar CAPICÚA*) y **abre sin conexión** después de la primera visita.
 Comparte el enlace por WhatsApp o genera un QR (por ejemplo con `qr-code-generator.com`). En celulares también se puede **añadir a la pantalla de inicio** desde el menú de Chrome.
 
 ## Paso 4 · (Opcional, de pago) Tu propio `capicua.com`
@@ -89,4 +95,4 @@ Esas funciones necesitan un **servidor**. Los servidores gratuitos suelen dormir
 **IA de CAPIA:** en **Perfil → Ajustes** cada persona puede pegar su propia clave de Anthropic. No pongas tu clave en el archivo ni en un repositorio público.
 
 ## Actualizar la página cuando cambies algo
-Si usas el código fuente: `npm install` y `npm run build` generan un nuevo `index.html`. Súbelo a GitHub (Add file → Upload files) y en 1–2 minutos la página se actualiza sola.
+Si usas el código fuente: `npm install` y `npm run build` generan un nuevo `index.html`. Súbelo a GitHub junto con `manifest.webmanifest`, `sw.js` y la carpeta `marca` (Add file → Upload files) y en 1–2 minutos la página se actualiza sola.
