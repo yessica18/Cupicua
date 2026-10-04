@@ -41,6 +41,7 @@ Cada generador se ejecuta con cientos de semillas en las pruebas: se comprueba q
 - **Salas multiusuario en tiempo real, foro moderado, rankings entre desconocidos, cuentas en la nube**: necesitan un servidor con moderación. Esta versión no depende de ninguno para que nunca caduque.
 - **Fine-tuning de un modelo**: no se entrena ningún modelo aquí. CAPIA usa un *prompt de sistema* pedagógico (`src/lib/tutor.js`, `SYSTEM_PROMPT`) y, si cada persona pega su clave de IA (Perfil → Ajustes), conversa con Claude directamente desde su navegador.
 - **Biblioteca de libros y repositorio de exámenes de las mejores universidades**: no se pueden copiar ni redistribuir materiales protegidos. CAPICÚA lista los textos de referencia, enlaza recursos abiertos (p. ej. MIT OpenCourseWare) y genera problemas ilimitados del mismo estilo.
+- **Conversación por voz**: 🎧 Conversar en CAPIA (Chrome/Edge): hablas, ella te escucha y responde en voz alta sin tocar nada; di “para” para terminar. El reconocimiento de voz de Chrome necesita internet.
 - **Fotos de ejercicios**: la lectura de imágenes requiere la IA conectada; sin ella CAPIA pide escribir el enunciado y guía paso a paso.
 - Las criaturas marinas son una selección curada (50), no “todas las especies”.
 

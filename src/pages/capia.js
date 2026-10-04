@@ -164,8 +164,36 @@ export function capiaPage(root) {
     const old = docPanel.querySelector('.reader'); old ? old.replaceWith(el) : docPanel.append(el);
   }
 
-  /* ───── Micrófono ───── */
-  const micBtn = h('button.btn.ghost.sm', { title: 'Hablar con CAPIA (puedes interrumpirla)', 'aria-label': 'Hablar', onclick: () => {
+  /* ───── Micrófono: toque único o conversación continua ───── */
+  const FATAL = ['not-allowed', 'service-not-allowed', 'audio-capture', 'network', 'unsupported'];
+  let talking = false;
+  const endTalk = (msg) => { talking = false; talkBtn.classList.remove('rec'); talkBtn.textContent = '🎧 Conversar'; micBtn.classList.remove('rec'); try { micRec?.abort?.(); } catch { /* ya cerrado */ } micRec = null; if (msg) toast(msg, { icon: '🎧' }); };
+  const waitSilence = () => new Promise((res) => { let quiet = 0; const t = setInterval(() => { quiet = isSpeaking() ? 0 : quiet + 1; if (quiet >= 2 || !talking || !root.isConnected) { clearInterval(t); res(); } }, 250); });
+  async function turn(retries = 0) {
+    if (!talking || !root.isConnected) { endTalk(); return; }
+    if (!listenAvailable()) { endTalk('Tu navegador no ofrece reconocimiento de voz. Usa Chrome.'); return; }
+    micBtn.classList.add('rec'); let heard = '';
+    micRec = listen({
+      onresult: (t) => { heard = t; input.value = t; },
+      onend: async () => {
+        micRec = null; micBtn.classList.remove('rec'); if (!talking) return;
+        const said = heard.trim(); input.value = '';
+        if (!said) { if (retries >= 3) { endTalk('Pausé la conversación porque no te escuché. Toca 🎧 para seguir.'); return; } turn(retries + 1); return; }
+        if (/^(para|detente|detén|basta|terminar|adiós|chao)\b/i.test(said)) { endTalk('Conversación terminada. ¡Aquí estaré!'); add('capia', '¡Hasta pronto! 🩷 Cuando quieras, seguimos.'); return; }
+        S.stats.voice += 1; await send(said); await waitSilence(); if (talking) turn(0);
+      },
+      onerror: (e) => { micRec = null; micBtn.classList.remove('rec'); if (FATAL.includes(e.code)) endTalk(e.message); else if (e.code !== 'aborted') toast(e.message, { icon: '🎙️' }); },
+    });
+  }
+  addEventListener('hashchange', () => { if (talking && !root.isConnected) { stopSpeaking(); endTalk(); } });
+  const talkBtn = h('button.btn.primary.sm', { title: 'Habla y CAPIA te escucha y responde enseguida, sin tocar nada', 'aria-label': 'Conversar por voz', onclick: () => {
+    if (talking) { stopSpeaking(); endTalk('Conversación terminada'); return; }
+    if (!listenAvailable() || !voiceAvailable()) { toast('Tu navegador no ofrece voz. Usa Chrome o Edge.', { icon: '🎙️' }); return; }
+    talking = true; setVoice({ on: true }); talkBtn.classList.add('rec'); talkBtn.textContent = '⏹ Terminar'; stopSpeaking();
+    toast('Te escucho. Habla con normalidad; di “para” para terminar.', { icon: '🎧' }); turn(0);
+  } }, '🎧 Conversar');
+  const micBtn = h('button.btn.ghost.sm', { title: 'Dictar un mensaje (puedes interrumpir a CAPIA)', 'aria-label': 'Dictar', onclick: () => {
+    if (talking) return;
     if (micRec) { micRec.stop(); return; }
     micBtn.classList.add('rec'); S.stats.voice += 1;
     micRec = listen({ onresult: (t, fin) => { input.value = t; if (fin) { micRec = null; micBtn.classList.remove('rec'); send(); } }, onend: () => { micRec = null; micBtn.classList.remove('rec'); }, onerror: (e) => { micRec = null; micBtn.classList.remove('rec'); toast(e.message, { icon: '🎙️' }); } });
@@ -175,7 +203,7 @@ export function capiaPage(root) {
   mount(root, h('section.page.capia-page',
     h('aside.capia-side', h('div.card.capia-card', face, h('h2', 'CAPIA'), emoChip, h('p.sub', 'Tu compañera de estudio. Nunca te juzga.'),
       h('label.check', socratic, ' Modo socrático (te guía, no te da la respuesta)'), h('label.check', voiceOn, ' Voz de CAPIA'),
-      h('div.btn-row', micBtn, h('button.btn.ghost.sm', { onclick: () => fileImg.click(), title: 'Subir foto de un ejercicio' }, '📷 Foto'), h('button.btn.ghost.sm', { onclick: () => filePdf.click(), title: 'Subir PDF' }, '📄 PDF'), h('button.btn.ghost.sm', { onclick: () => modal(pomodoroPanel(), { title: '🍅 Pomodoro con CAPIA' }) }, '🍅'), h('button.btn.ghost.sm', { onclick: () => stopSpeaking() }, '🔇')),
+      h('div.btn-row', talkBtn, micBtn, h('button.btn.ghost.sm', { onclick: () => fileImg.click(), title: 'Subir foto de un ejercicio' }, '📷 Foto'), h('button.btn.ghost.sm', { onclick: () => filePdf.click(), title: 'Subir PDF' }, '📄 PDF'), h('button.btn.ghost.sm', { onclick: () => modal(pomodoroPanel(), { title: '🍅 Pomodoro con CAPIA' }) }, '🍅'), h('button.btn.ghost.sm', { onclick: () => stopSpeaking() }, '🔇')),
       !S.game.apiKey ? h('small.fine', '🤖 Modo local activo. Para conversación abierta y lectura de fotos, añade tu clave de IA en Perfil → Ajustes.') : h('small.ok', '🤖 IA conectada'), fileImg, filePdf)),
     h('div.chat', docPanel, log, photoPrev, h('div.chips', chips.map((c) => h('button.chip', { onclick: () => send(c) }, c))), h('div.composer', input, h('button.btn.primary', { onclick: () => send(), 'aria-label': 'Enviar' }, '➤')))));
 

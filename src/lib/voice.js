@@ -37,6 +37,6 @@ export function listen({ onresult, onend, onerror }) {
   stopSpeaking(); // interrupción de voz: si hablas, CAPIA se calla
   const r = new SR(); r.lang = 'es-ES'; r.interimResults = true; r.continuous = false;
   r.onresult = (e) => { const t = [...e.results].map((x) => x[0].transcript).join(' '); onresult?.(t, e.results[e.results.length - 1].isFinal); };
-  r.onend = () => onend?.(); r.onerror = (e) => onerror?.(new Error(e.error === 'not-allowed' ? 'Permite el micrófono para hablar con CAPIA.' : 'No te escuché bien, intenta de nuevo.'));
+  r.onend = () => onend?.(); r.onerror = (e) => { const err = new Error(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Permite el micrófono para hablar con CAPIA.' : e.error === 'no-speech' ? 'No te escuché; cuando quieras, habla.' : e.error === 'network' ? 'El reconocimiento de voz de Chrome necesita internet.' : 'No te escuché bien, intenta de nuevo.'); err.code = e.error; onerror?.(err); };
   r.start(); return r;
 }
