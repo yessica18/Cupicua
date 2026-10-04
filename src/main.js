@@ -68,7 +68,8 @@ function gate(fn) {
     view.scrollTo?.(0, 0); window.scrollTo(0, 0);
     // desbloqueos silenciosos y logros
     const fresh = checkAchievements(state()); syncUnlocks(state());
-    fresh.forEach((a, i) => setTimeout(() => { toast(`${a.icon} ${a.name}`, { icon: '🏅', ms: 3600 }); sfx.levelup(); }, 600 + i * 900));
+    fresh.slice(0, 3).forEach((a, i) => setTimeout(() => { toast(`${a.icon} ${a.name}`, { icon: '🏅', ms: 3600 }); sfx.levelup(); }, 600 + i * 900));
+    if (fresh.length > 3) setTimeout(() => toast(`🏅 …y ${fresh.length - 3} insignias más en tu perfil`, { icon: '🏅' }), 600 + 3 * 900);
     if (fresh.length) save();
   };
 }

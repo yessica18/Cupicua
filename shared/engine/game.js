@@ -313,7 +313,8 @@ export function recommendNext(state) {
   const inProgress = ALL_LEVELS.filter((l) => state.levels[l.id]?.att && masteryOf(state, l.id).pct < 81).sort((a, b) => (state.levels[b.id].lastTs || 0) - (state.levels[a.id].lastTs || 0))[0];
   if (inProgress) return { kind: 'continue', level: inProgress };
   // primer nivel sin dominar con prerrequisitos razonables
-  for (const r of REGIONS) {
+  const order = [...REGIONS].sort((a, b) => (b.id === state.game?.subject) - (a.id === state.game?.subject));
+  for (const r of order) {
     if (!regionUnlockedFor(state, r.id)) continue;
     const cand = r.levels.find((l) => masteryOf(state, l.id).pct < 81 && prereqGaps(state, l.id, 25).length === 0);
     if (cand) return { kind: 'new', level: cand, due };

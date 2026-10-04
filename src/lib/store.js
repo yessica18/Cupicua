@@ -88,6 +88,7 @@ function migrate(s) {
   s = { ...base, ...s, profile: { ...base.profile, ...s.profile, avatar: { ...base.profile.avatar, ...(s.profile?.avatar || {}) } }, stats: { ...base.stats, ...s.stats }, streak: { ...base.streak, ...s.streak }, settings: { ...base.settings, ...s.settings, privacy: { ...base.settings.privacy, ...(s.settings?.privacy || {}) } } };
   // Extensiones del juego
   s.game = { hp: 100, hpAt: Date.now(), items: { curita: 2, venda: 1 }, enemies: {}, shells: 1, pets: {}, activePet: null, subject: null, tutorial: false, events: [], tasks: [], cards: {}, stars: {}, apiKey: '', lastDaily: null, ...(s.game || {}) };
+  if (!s.settings._init) { s.settings._init = true; try { s.settings.reduceMotion = !!matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { /* sin matchMedia */ } }
   s.v = STATE_VERSION; return s;
 }
 
